@@ -49,10 +49,47 @@ const VERTICES: &[Vertex] = &[
 fn main() {
     let event_loop = EventLoop::new().unwrap();
 
-    let _window = WindowBuilder::new()
-        .with_title("Bio Rust")
-        .build(&event_loop)
-        .unwrap();
+    let instance = Instance::default();
+
+    let window = Box::leak(Box::new(
+        WindowBuilder::new()
+            .with_title("Bio Rust")
+            .build(&event_loop)
+            .unwrap()
+    ));
+
+    let surface = instance.create_surface(&*window).unwrap();
+
+    let adapter = pollster::block_on(instance.request_adapter(&RequestAdapterOptions {
+        power_preference: PowerPreference::HighPerformance,
+        force_fallback_adapter: false,
+        compatible_surface: Some(&surface),
+    })).expect("Failed to request adapter");
+
+    let (device, queue) = pollster::block_on(adapter.request_device(
+        &wgpu::DeviceDescriptor{
+            label: None,
+            required_features: Features::empty(),
+            required_limits: Limits::default(),
+            memory_hints: Default::default(),
+        },
+        None,
+    )).expect("Failed to request device");
+
+    let size = window.inner_size();
+    let surface_caps = surface.get_capabilities(&adapter);
+    let surface_format = surface_caps.formats[0];
+    let config = SurfaceConfiguration {
+        usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
+        format: surface_format,
+        width: size.width,
+        height: size.height,
+        present_mode: PresentMode::Fifo,
+        alpha_mode: surface_caps.alpha_modes[0],
+        view_formats: vec![],
+        desired_maximum_frame_latency: 2,
+    };
+    surface.configure(&device, &config);
 
     println!("Running");
 
