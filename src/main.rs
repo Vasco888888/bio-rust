@@ -36,25 +36,36 @@ impl Vertex {
     }
 }
 
-fn create_grid_vertices(rows: u32, cols: u32, cell_size: f32, color: [f32; 3]) -> Vec<Vertex> {
+fn create_grid_vertices(dna: &[u8], rows: u32, cols: u32, cell_size: f32) -> Vec<Vertex> {
     let mut vertices = Vec::new();
-    let padding = 0.02; 
+    let padding = 0.02;
 
-    for row in 0..rows {
-        for col in 0..cols {
-            let x_offset = (col as f32 * (cell_size + padding)) - 0.6;
-            let y_offset = (row as f32 * (cell_size + padding)) - 0.6;
+    for (i, &base) in dna.iter().enumerate() {
+        if i >= (rows * cols) as usize { break; }
 
-            vertices.extend_from_slice(&[
-                Vertex { position: [x_offset, y_offset + cell_size], color },
-                Vertex { position: [x_offset, y_offset], color },
-                Vertex { position: [x_offset + cell_size, y_offset], color },
+        let row = i as u32 / cols;
+        let col = i as u32 % cols;
 
-                Vertex { position: [x_offset, y_offset + cell_size], color },
-                Vertex { position: [x_offset + cell_size, y_offset], color },
-                Vertex { position: [x_offset + cell_size, y_offset + cell_size], color },
-            ]);
-        }
+        let x_offset = (col as f32 * (cell_size + padding)) - 0.6;
+        let y_offset = (row as f32 * (cell_size + padding)) - 0.6;
+
+        let color = match base {
+            b'A' => [1.0, 0.0, 0.0], 
+            b'C' => [0.0, 1.0, 0.0], 
+            b'G' => [0.0, 0.0, 1.0], 
+            b'T' => [1.0, 1.0, 0.0], 
+            _ => [0.5, 0.5, 0.5],    
+        };
+
+        vertices.extend_from_slice(&[
+            Vertex { position: [x_offset, y_offset + cell_size], color },
+            Vertex { position: [x_offset, y_offset], color },
+            Vertex { position: [x_offset + cell_size, y_offset], color },
+
+            Vertex { position: [x_offset, y_offset + cell_size], color },
+            Vertex { position: [x_offset + cell_size, y_offset], color },
+            Vertex { position: [x_offset + cell_size, y_offset + cell_size], color },
+        ]);
     }
     vertices
 }
@@ -111,8 +122,7 @@ fn main() {
     };
     surface.configure(&device, &config);
 
-    let vertex_color = [1.0 - gc, gc, 0.0];
-    let grid_data = create_grid_vertices(10, 10, 0.08, vertex_color);
+    let grid_data = create_grid_vertices(dna, 5, 5, 0.15);
 
     let vertex_buffer = device.create_buffer_init(
         &wgpu::util::BufferInitDescriptor {
