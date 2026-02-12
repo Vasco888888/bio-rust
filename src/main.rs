@@ -4,6 +4,13 @@ use winit::{
     window::WindowBuilder,
 };
 
+#[repr(C)]
+#[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
+struct Vertex {
+    position: [f32; 2],
+    color: [f32; 3],
+}
+
 fn main() {
     let event_loop = EventLoop::new().unwrap();
 
