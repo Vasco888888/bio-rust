@@ -65,7 +65,7 @@ fn main() {
     };
     surface.configure(&device, &config);
 
-    let mut universe = Universe::new(10, 10);
+    let mut universe = Universe::new(10, 10, dna);
     let cell_size = 0.08;
     let mut grid_data = create_grid_vertices(&universe, cell_size);
 

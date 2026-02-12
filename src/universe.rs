@@ -5,8 +5,18 @@ pub struct Universe {
 }
 
 impl Universe {
-    pub fn new(rows: u32, cols: u32) -> Self {
-        let cells = vec![false; (rows * cols) as usize];
+    pub fn new(rows: u32, cols: u32, dna: &[u8]) -> Self {
+        let mut cells = vec![false; (rows * cols) as usize];
+        
+        // Seed the cells based on DNA sequence
+        // G/C bases create "Alive" cells
+        for (i, &base) in dna.iter().enumerate() {
+            if i >= cells.len() { break; }
+            if base == b'G' || base == b'C' {
+                cells[i] = true;
+            }
+        }
+        
         Self { cells, rows, cols }
     }
 
