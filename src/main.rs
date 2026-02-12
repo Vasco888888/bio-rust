@@ -13,11 +13,24 @@ fn main() {
         .unwrap();
 
     println!("Running");
+
+    let mut color_toggle = false;
+
     event_loop.run(move |event, target| {
         match event {
             Event::WindowEvent { event: WindowEvent::CloseRequested, ..} => {
                 println!("Closing");
                 target.exit();
+            }
+
+            Event::WindowEvent { event: WindowEvent::KeyboardInput { .. }, .. } => {
+                color_toggle = !color_toggle;
+
+                if color_toggle {
+                    println!("The grid is now RED");
+                } else {
+                    println!("The grid is now BLUE");
+                }
             }
             _ => {},
         }
