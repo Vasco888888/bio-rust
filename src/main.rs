@@ -141,6 +141,8 @@ fn main() {
 
     let mut color_toggle = false;
 
+    let window_ref = &*window;
+
     event_loop.run(move |event, target| {
         match event {
             Event::WindowEvent { event: WindowEvent::CloseRequested, ..} => {
@@ -148,13 +150,61 @@ fn main() {
                 target.exit();
             }
 
-            Event::WindowEvent { event: WindowEvent::KeyboardInput { .. }, .. } => {
-                color_toggle = !color_toggle;
+            Event::AboutToWait => {
+                window_ref.request_redraw();
+            }
 
-                if color_toggle {
-                    println!("The grid is now RED");
-                } else {
-                    println!("The grid is now BLUE");
+            Event::WindowEvent { event: WindowEvent::RedrawRequested, .. } => {
+                let output = surface.get_current_texture().unwrap();
+                let view = output.texture.create_view(&TextureViewDescriptor::default());
+
+                let mut encoder = device.create_command_encoder(&CommandEncoderDescriptor {
+                    label: Some("Render Encoder"),
+                });
+
+                {
+                    let mut render_pass = encoder.begin_render_pass(&RenderPassDescriptor {
+                        label: Some("Render Pass"),
+                        color_attachments: &[Some(RenderPassColorAttachment {
+                            view: &view,
+                            resolve_target: None,
+                            ops: Operations {
+                                load: LoadOp::Clear(Color { 
+                                    r: if color_toggle { 1.0 } else { 0.1 }, 
+                                    g: 0.1, 
+                                    b: if !color_toggle { 1.0 } else { 0.1 }, 
+                                    a: 1.0 
+                                }),
+                                store: StoreOp::Store,
+                            },
+                        })],
+                        ..Default::default()
+                    });
+
+                    render_pass.set_pipeline(&render_pipeline);
+                    render_pass.set_vertex_buffer(0, vertex_buffer.slice(..));
+                    render_pass.draw(0..6, 0..1);
+                }
+
+                queue.submit(std::iter::once(encoder.finish()));
+                output.present();
+            }
+
+            Event::WindowEvent { 
+                event: WindowEvent::KeyboardInput { 
+                    event: input, 
+                    .. 
+                }, 
+                .. 
+            } => {
+                if input.state == winit::event::ElementState::Pressed {
+                    color_toggle = !color_toggle;
+
+                    if color_toggle {
+                        println!("The grid is now RED");
+                    } else {
+                        println!("The grid is now BLUE");
+                    }
                 }
             }
             _ => {},
