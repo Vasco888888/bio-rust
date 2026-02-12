@@ -36,6 +36,29 @@ impl Vertex {
     }
 }
 
+fn create_grid_vertices(rows: u32, cols: u32, cell_size: f32, color: [f32; 3]) -> Vec<Vertex> {
+    let mut vertices = Vec::new();
+    let padding = 0.02; 
+
+    for row in 0..rows {
+        for col in 0..cols {
+            let x_offset = (col as f32 * (cell_size + padding)) - 0.6;
+            let y_offset = (row as f32 * (cell_size + padding)) - 0.6;
+
+            vertices.extend_from_slice(&[
+                Vertex { position: [x_offset, y_offset + cell_size], color },
+                Vertex { position: [x_offset, y_offset], color },
+                Vertex { position: [x_offset + cell_size, y_offset], color },
+
+                Vertex { position: [x_offset, y_offset + cell_size], color },
+                Vertex { position: [x_offset + cell_size, y_offset], color },
+                Vertex { position: [x_offset + cell_size, y_offset + cell_size], color },
+            ]);
+        }
+    }
+    vertices
+}
+
 fn main() {
     let dna = b"GATCCAGATCGATCCGATCGATC";
     let gc = gc_content(dna);
@@ -89,22 +112,12 @@ fn main() {
     surface.configure(&device, &config);
 
     let vertex_color = [1.0 - gc, gc, 0.0];
-    let vertices: &[Vertex] = &[
-        // Triangle 1
-        Vertex { position: [-0.5,  0.5], color: vertex_color }, 
-        Vertex { position: [-0.5, -0.5], color: vertex_color },
-        Vertex { position: [ 0.5, -0.5], color: vertex_color },
-        
-        // Triangle 2
-        Vertex { position: [-0.5,  0.5], color: vertex_color },
-        Vertex { position: [ 0.5, -0.5], color: vertex_color },
-        Vertex { position: [ 0.5,  0.5], color: vertex_color },
-    ];
+    let grid_data = create_grid_vertices(10, 10, 0.08, vertex_color);
 
     let vertex_buffer = device.create_buffer_init(
         &wgpu::util::BufferInitDescriptor {
             label: Some("Vertex Buffer"),
-            contents: bytemuck::cast_slice(vertices),
+            contents: bytemuck::cast_slice(&grid_data),
             usage: wgpu::BufferUsages::VERTEX,
         }
     );
@@ -192,7 +205,7 @@ fn main() {
 
                     render_pass.set_pipeline(&render_pipeline);
                     render_pass.set_vertex_buffer(0, vertex_buffer.slice(..));
-                    render_pass.draw(0..6, 0..1);
+                    render_pass.draw(0..grid_data.len() as u32, 0..1);
                 }
 
                 queue.submit(std::iter::once(encoder.finish()));
