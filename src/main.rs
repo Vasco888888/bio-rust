@@ -36,18 +36,6 @@ impl Vertex {
     }
 }
 
-const VERTICES: &[Vertex] = &[
-    // Triangle 1
-    Vertex { position: [-0.5,  0.5], color: [1.0, 0.0, 0.0] }, 
-    Vertex { position: [-0.5, -0.5], color: [0.0, 1.0, 0.0] },
-    Vertex { position: [ 0.5, -0.5], color: [0.0, 0.0, 1.0] },
-    
-    // Triangle 2
-    Vertex { position: [-0.5,  0.5], color: [1.0, 0.0, 0.0] },
-    Vertex { position: [ 0.5, -0.5], color: [0.0, 0.0, 1.0] },
-    Vertex { position: [ 0.5,  0.5], color: [1.0, 1.0, 0.0] },
-];
-
 fn main() {
     let dna = b"GATCCAGATCGATCCGATCGATC";
     let gc = gc_content(dna);
@@ -100,10 +88,23 @@ fn main() {
     };
     surface.configure(&device, &config);
 
+    let vertex_color = [1.0 - gc, gc, 0.0];
+    let vertices: &[Vertex] = &[
+        // Triangle 1
+        Vertex { position: [-0.5,  0.5], color: vertex_color }, 
+        Vertex { position: [-0.5, -0.5], color: vertex_color },
+        Vertex { position: [ 0.5, -0.5], color: vertex_color },
+        
+        // Triangle 2
+        Vertex { position: [-0.5,  0.5], color: vertex_color },
+        Vertex { position: [ 0.5, -0.5], color: vertex_color },
+        Vertex { position: [ 0.5,  0.5], color: vertex_color },
+    ];
+
     let vertex_buffer = device.create_buffer_init(
         &wgpu::util::BufferInitDescriptor {
             label: Some("Vertex Buffer"),
-            contents: bytemuck::cast_slice(VERTICES),
+            contents: bytemuck::cast_slice(vertices),
             usage: wgpu::BufferUsages::VERTEX,
         }
     );
@@ -178,9 +179,9 @@ fn main() {
                             resolve_target: None,
                             ops: Operations {
                                 load: LoadOp::Clear(Color { 
-                                    r: if color_toggle { 1.0 } else { 0.1 }, 
-                                    g: 0.1, 
-                                    b: if !color_toggle { 1.0 } else { 0.1 }, 
+                                    r: if color_toggle { 0.15 } else { 0.05 }, 
+                                    g: 0.05, 
+                                    b: if !color_toggle { 0.15 } else { 0.05 }, 
                                     a: 1.0 
                                 }),
                                 store: StoreOp::Store,
@@ -209,9 +210,9 @@ fn main() {
                     color_toggle = !color_toggle;
 
                     if color_toggle {
-                        println!("The grid is now RED");
+                        println!("Background: Dim Red");
                     } else {
-                        println!("The grid is now BLUE");
+                        println!("Background: Dim Blue");
                     }
                 }
             }
