@@ -65,8 +65,8 @@ fn main() {
     };
     surface.configure(&device, &config);
 
-    let mut universe = Universe::new(10, 10, dna);
-    let cell_size = 0.08;
+    let mut universe = Universe::new(20, 20, dna);
+    let cell_size = 0.04;
     let mut grid_data = create_grid_vertices(&universe, cell_size);
 
     let vertex_buffer = device.create_buffer_init(
@@ -164,7 +164,7 @@ fn main() {
             }
 
             Event::AboutToWait => {
-                if last_update_inst.elapsed() >= std::time::Duration::from_millis(200) {
+                if last_update_inst.elapsed() >= std::time::Duration::from_millis(500) {
                     universe.tick();
                     grid_data = create_grid_vertices(&universe, cell_size);
                     queue.write_buffer(&vertex_buffer, 0, bytemuck::cast_slice(&grid_data));
