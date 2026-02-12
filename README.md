@@ -21,7 +21,7 @@ The project is designed with a modular structure to ensure maintainability and s
 Upon startup, the engine uses the rust-bio crate to analyze a DNA sequence. It calculates key metrics such as GC-content and provides terminal-based feedback before launching the visual environment.
 
 ### 2. GPU-Accelerated Simulation
-The visual environment uses WGPU to render a 20x20 high-frequency grid. The simulation runs on a separate logical tick (defaulting to 500ms) while the rendering loop continues at the display's native refresh rate for smooth interaction.
+The visual environment uses WGPU to render a 10x10 high-frequency grid. The simulation runs on a separate logical tick (defaulting to 500ms) while the rendering loop continues at the display's native refresh rate for smooth interaction.
 
 ### 3. DNA-Based Seeding
 The initial state of the simulation is "seeded" directly from the biological data. Guanine (G) and Cytosine (C) bases in the DNA sequence determine the starting positions of living cells, creating a unique evolutionary path for every sequence.
