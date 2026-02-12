@@ -11,11 +11,23 @@ struct Vertex {
     color: [f32; 3],
 }
 
+const VERTICES: &[Vertex] = &[
+    // Triangle 1
+    Vertex { position: [-0.5,  0.5], color: [1.0, 0.0, 0.0] }, 
+    Vertex { position: [-0.5, -0.5], color: [0.0, 1.0, 0.0] },
+    Vertex { position: [ 0.5, -0.5], color: [0.0, 0.0, 1.0] },
+    
+    // Triangle 2
+    Vertex { position: [-0.5,  0.5], color: [1.0, 0.0, 0.0] },
+    Vertex { position: [ 0.5, -0.5], color: [0.0, 0.0, 1.0] },
+    Vertex { position: [ 0.5,  0.5], color: [1.0, 1.0, 0.0] },
+];
+
 fn main() {
     let event_loop = EventLoop::new().unwrap();
 
     let _window = WindowBuilder::new()
-        .with_title("Bio Rust: First Step")
+        .with_title("Bio Rust")
         .build(&event_loop)
         .unwrap();
 
