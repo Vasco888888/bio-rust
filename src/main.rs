@@ -164,7 +164,7 @@ fn main() {
             }
 
             Event::AboutToWait => {
-                if last_update_inst.elapsed() >= std::time::Duration::from_millis(500) {
+                if last_update_inst.elapsed() >= std::time::Duration::from_millis(1000) {
                     universe.tick();
                     grid_data = create_grid_vertices(&universe, cell_size);
                     queue.write_buffer(&vertex_buffer, 0, bytemuck::cast_slice(&grid_data));
