@@ -5,6 +5,7 @@ use winit::{
 };
 
 use wgpu::*;
+use wgpu::util::DeviceExt;
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
@@ -90,6 +91,16 @@ fn main() {
         desired_maximum_frame_latency: 2,
     };
     surface.configure(&device, &config);
+
+    let vertex_buffer = device.create_buffer_init(
+        &wgpu::util::BufferInitDescriptor {
+            label: Some("Vertex Buffer"),
+            contents: bytemuck::cast_slice(VERTICES),
+            usage: wgpu::BufferUsages::VERTEX,
+        }
+    );
+
+    let shader = device.create_shader_module(wgpu::include_wgsl!("shader.wgsl"));
 
     println!("Running");
 
