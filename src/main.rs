@@ -36,36 +36,50 @@ impl Vertex {
     }
 }
 
-fn create_grid_vertices(dna: &[u8], rows: u32, cols: u32, cell_size: f32) -> Vec<Vertex> {
+struct Universe {
+    cells: Vec<bool>,
+    rows: u32,
+    cols: u32,
+}
+
+impl Universe {
+    fn new(rows: u32, cols: u32) -> Self {
+        let cells = vec![false; (rows * cols) as usize];
+        Self { cells, rows, cols }
+    }
+    fn toggle(&mut self, row: u32, col: u32) {
+        let idx = (row * self.cols + col) as usize;
+        self.cells[idx] = !self.cells[idx];
+    }
+}
+
+fn create_grid_vertices(universe: &Universe, cell_size: f32) -> Vec<Vertex> {
     let mut vertices = Vec::new();
     let padding = 0.02;
 
-    for (i, &base) in dna.iter().enumerate() {
-        if i >= (rows * cols) as usize { break; }
+    for row in 0..universe.rows {
+        for col in 0..universe.cols {
+            let idx = (row * universe.cols + col) as usize;
+            
+            let color = if universe.cells[idx] {
+                [0.2, 0.8, 0.2] // Alive: Green
+            } else {
+                [0.1, 0.1, 0.1] // Dead: Dark Grey
+            };
 
-        let row = i as u32 / cols;
-        let col = i as u32 % cols;
+            let x_offset = (col as f32 * (cell_size + padding)) - 0.6;
+            let y_offset = (row as f32 * (cell_size + padding)) - 0.6;
 
-        let x_offset = (col as f32 * (cell_size + padding)) - 0.6;
-        let y_offset = (row as f32 * (cell_size + padding)) - 0.6;
+            vertices.extend_from_slice(&[
+                Vertex { position: [x_offset, y_offset + cell_size], color },
+                Vertex { position: [x_offset, y_offset], color },
+                Vertex { position: [x_offset + cell_size, y_offset], color },
 
-        let color = match base {
-            b'A' => [1.0, 0.0, 0.0], 
-            b'C' => [0.0, 1.0, 0.0], 
-            b'G' => [0.0, 0.0, 1.0], 
-            b'T' => [1.0, 1.0, 0.0], 
-            _ => [0.5, 0.5, 0.5],    
-        };
-
-        vertices.extend_from_slice(&[
-            Vertex { position: [x_offset, y_offset + cell_size], color },
-            Vertex { position: [x_offset, y_offset], color },
-            Vertex { position: [x_offset + cell_size, y_offset], color },
-
-            Vertex { position: [x_offset, y_offset + cell_size], color },
-            Vertex { position: [x_offset + cell_size, y_offset], color },
-            Vertex { position: [x_offset + cell_size, y_offset + cell_size], color },
-        ]);
+                Vertex { position: [x_offset, y_offset + cell_size], color },
+                Vertex { position: [x_offset + cell_size, y_offset], color },
+                Vertex { position: [x_offset + cell_size, y_offset + cell_size], color },
+            ]);
+        }
     }
     vertices
 }
@@ -122,13 +136,15 @@ fn main() {
     };
     surface.configure(&device, &config);
 
-    let grid_data = create_grid_vertices(dna, 5, 5, 0.15);
+    let mut universe = Universe::new(10, 10);
+    let cell_size = 0.08;
+    let mut grid_data = create_grid_vertices(&universe, cell_size);
 
     let vertex_buffer = device.create_buffer_init(
         &wgpu::util::BufferInitDescriptor {
             label: Some("Vertex Buffer"),
             contents: bytemuck::cast_slice(&grid_data),
-            usage: wgpu::BufferUsages::VERTEX,
+            usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
         }
     );
 
@@ -172,6 +188,7 @@ fn main() {
     println!("Running");
 
     let mut color_toggle = false;
+    let mut cursor_pos = winit::dpi::PhysicalPosition::new(0.0, 0.0);
 
     let window_ref = &*window;
 
@@ -180,6 +197,42 @@ fn main() {
             Event::WindowEvent { event: WindowEvent::CloseRequested, ..} => {
                 println!("Closing");
                 target.exit();
+            }
+
+            Event::WindowEvent { event: WindowEvent::CursorMoved { position, .. }, .. } => {
+                cursor_pos = position;
+            }
+
+            Event::WindowEvent { 
+                event: WindowEvent::MouseInput { 
+                    state: winit::event::ElementState::Pressed,
+                    button: winit::event::MouseButton::Left,
+                    ..
+                }, 
+                .. 
+            } => {
+                let size = window_ref.inner_size();
+                let x = (cursor_pos.x as f32 / size.width as f32) * 2.0 - 1.0;
+                let y = (cursor_pos.y as f32 / size.height as f32) * -2.0 + 1.0;
+
+                for row in 0..universe.rows {
+                    for col in 0..universe.cols {
+                        let padding = 0.02;
+                        let x_offset = (col as f32 * (cell_size + padding)) - 0.6;
+                        let y_offset = (row as f32 * (cell_size + padding)) - 0.6;
+
+                        if x >= x_offset && x <= x_offset + cell_size &&
+                           y >= y_offset && y <= y_offset + cell_size {
+                            universe.toggle(row, col);
+                            
+                            grid_data = create_grid_vertices(&universe, cell_size);
+                            
+                            if !grid_data.is_empty() {
+                                queue.write_buffer(&vertex_buffer, 0, bytemuck::cast_slice(&grid_data));
+                            }
+                        }
+                    }
+                }
             }
 
             Event::AboutToWait => {
