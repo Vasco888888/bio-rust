@@ -1,6 +1,6 @@
 # Bio Rust
 
-Bio-Rust is a high-performance bioinformatics visualization and simulation engine built using the Rust programming language and the WGPU graphics API. It combines hardware-accelerated graphics with biological sequence analysis to create interactive simulations.
+Bio Rust is a high-performance bioinformatics visualization and simulation engine built using the Rust programming language and the WGPU graphics API. It combines hardware-accelerated graphics with biological sequence analysis to create interactive simulations.
 
 ## Project Overview
 
