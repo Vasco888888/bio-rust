@@ -3,6 +3,7 @@ use winit::{
     event_loop::EventLoop,
     window::WindowBuilder,
 };
+use bio::seq_analysis::gc::gc_content;
 
 use wgpu::*;
 use wgpu::util::DeviceExt;
@@ -48,6 +49,13 @@ const VERTICES: &[Vertex] = &[
 ];
 
 fn main() {
+    let dna = b"GATCCAGATCGATCCGATCGATC";
+    let gc = gc_content(dna);
+    println!("--- Bio Analysis ---");
+    println!("Sequence: {}", std::str::from_utf8(dna).unwrap());
+    println!("GC-Content: {:.2}%", gc * 100.0);
+    println!("--------------------");
+
     let event_loop = EventLoop::new().unwrap();
 
     let instance = Instance::default();
