@@ -2,6 +2,11 @@
 name = "Bio-Rust"
 version = "0.1.0"
 edition = "2024"
+description = "A hardware-accelerated DNA-to-simulation engine built with Rust and WGPU. Analyzes biological sequences to seed and evolve interactive cellular automata."
+license = "MIT"
+repository = "https://github.com/Vasco888888/bio-rust"
+keywords = ["bioinformatics", "wgpu", "cellular-automata", "dna", "gpu"]
+categories = ["science", "graphics", "simulation"]
 
 [dependencies]
 winit = "0.29"
